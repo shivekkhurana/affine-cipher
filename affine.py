@@ -68,7 +68,7 @@ class A:
     s = list()
 
     for w in sorted(frequencified, key=lambda x:frequencified[x], reverse=True):
-      if(w != 'SPACE'):
+      if(w != 'SPACE' and (w not in s)):
         s.append(w)
     return sorted(s, key=lambda x:language.alphabets.index(x))
 
@@ -78,8 +78,8 @@ class Affine:
   '''
   def __init__(self, string, language):
     self.string = A(string) #alphabet object to (en|de)crypt
-    self.language = A(language).alphabets #the script of language being encoded or decoded in alphabetic order
-    self.m = len(self.language)
+    self.language = A(language) #alphabet object of the script of language being encoded or decoded (in alphabetic order)
+    self.m = len(self.language.alphabets)
 
   def frequencies(self, f_table, corpus=None):
     '''
@@ -112,9 +112,9 @@ class Affine:
         if(alphabet == 'SPACE'):
           crypt+=' '
           continue
-        x = self.language.index(alphabet)
+        x = self.language.alphabets.index(alphabet)
         y = (a*x + b)%m 
-        crypt += ucd.lookup(self.language[y])
+        crypt += ucd.lookup(self.language.alphabets[y])
       return A(crypt)
     else:
       raise ValueError("Expected co primes")
@@ -123,7 +123,7 @@ class Affine:
     '''
     Inverse of 'a' for decryption
     @param int a
-    @return int  
+    @return int
     '''
     for i in range(self.m):
       if((i*a)%self.m == 1):
@@ -148,12 +148,31 @@ class Affine:
       if(alphabet == 'SPACE'):
         crypt += ' '
         continue
-      x = self.language.index(alphabet)
+      x = self.language.alphabets.index(alphabet)
       y = z*(x-b)%m
-      crypt += ucd.lookup(self.language[y])
+      crypt += ucd.lookup(self.language.alphabets[y])
     return A(crypt)
 
   def break_affine(self, f_table):
-    most_occuring = A(f_table)
-    ordered_string = self.string.frequencify() #sorted list of alphabets arranged in decreasing order of occurance
+    '''
+    Match two most occuring elements in langauage to two most occuring
+    elements in the given string. Ask user if the return is apt. If not
+    repeat it with next most occuring elements.
 
+    @param raw_string or text file
+    @return
+    '''
+    most_occuring = A(f_table)
+    ordered_string = self.string.frequencify(self.language) #sorted list of alphabets arranged in decreasing order of occurance
+    x1 = self.language.alphabets.index(most_occuring.alphabets[0])
+    x2 = self.language.alphabets.index(most_occuring.alphabets[1])
+    print ordered_string
+    for i in range( len(ordered_string) ):
+      y1 = self.language.alphabets.index(ordered_string[i])
+      y2 = self.language.alphabets.index(ordered_string[i+1])
+
+      a = (y1-y2)/(x1-x2)
+      b = ((x1*y2) - (x2*y1))/(x1-x2)
+      print "a = %s b = %s \n\n"%(a,b), '-'*60, '\n'
+      print self.decrypt(a,b).read()
+      print '-'*60, '\n'
