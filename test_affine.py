@@ -4,10 +4,12 @@ from affine import *
 a = A("devnagri.txt")
 s = A("infile.txt")
 #print a.alphabets
-#print s.alphabets
+#print A("afsfsaascxvs").frequencify(A("english.txt"))
 
-c = Affine('ttttttweee', 'english.txt')
-k = c.frequencify().read()
+c = Affine('to infinity and beyond', 'english.txt')
+k = c.encrypt(5,5).read()
+#k = c.frequencify().read()
+
 print k
 #print Affine(k,'devnagri.txt').decrypt(5,7).read()
 

@@ -22,7 +22,7 @@ class A:
       #raw input given
       #print e
       pass
-
+    string = string.lower() #fix english, safe otherwise
     try:
       self.alphabets = string.decode('utf-8')#a list of all alphabets in required language
     except UnicodeEncodeError,e:
@@ -50,13 +50,35 @@ class A:
       read += ucd.lookup(a)
     return read
 
+  def frequencify(self, language):
+    '''
+    List of alphabets of string arranged in decreasing order of occurence.
+    If an element has same occurance, then the element with lower index in script
+    i.e the one which comes first is placed first (ex a is placed before b)
+
+    @param 'A' object for language to which the string needs to be mapped
+    @return list
+    '''
+    frequencified = {} #a dict to store occurences of a alphabet in unicode equivalent
+    for alphabet in self.alphabets:
+      if(frequencified.has_key(alphabet)):
+        frequencified[alphabet] += 1 #if already occured +1 to occurence
+      else:
+        frequencified[alphabet] = 1 #never occured before
+    s = list()
+
+    for w in sorted(frequencified, key=lambda x:frequencified[x], reverse=True):
+      if(w != 'SPACE'):
+        s.append(w)
+    return sorted(s, key=lambda x:language.alphabets.index(x))
+
 class Affine:
   '''
   All (en|de)crypt methods
   '''
   def __init__(self, string, language):
-    self.string = A(string).alphabets #string is a list of alphabet objects to (en|de)crypt
-    self.language = A(language).alphabets
+    self.string = A(string) #alphabet object to (en|de)crypt
+    self.language = A(language).alphabets #the script of language being encoded or decoded in alphabetic order
     self.m = len(self.language)
 
   def frequencies(self, f_table, corpus=None):
@@ -73,33 +95,11 @@ class Affine:
       #get into corpus and generate an f_table and save it as a file f_table.json
       pass #for now !!!TODO!!!
 
-  def frequencify(self):
-    '''
-    'A' object with alphabets of string arranged in decreasing order of occurence.
-    If an element has same occurance, then the element with lower index in script
-    i.e the one which comes first is placed first (ex a is placed before b)
-
-    @param None
-    @return A object
-    '''
-    frequencified = {}
-    for alphabet in self.string:
-      if(frequencified.has_key(alphabet)):
-        frequencified[alphabet] += 1
-      else:
-        frequencified[alphabet] = 1
-    #sorting fast as on http://stackoverflow.com/questions/613183
-    s= ''
-
-    for w in sorted(frequencified, frequencified.get):
-      s += ucd.lookup(w)
-    return A(s)
-
   def encrypt(self, a, b):
     '''
     Encrypt string on the basis of give a,b
     y = (ax + b)%(m)
-    
+
     @param int a
     @param int b
     @return 'A' object
@@ -108,7 +108,7 @@ class Affine:
     m = self.m
     if(gcd(m, a) == 1):
     #check a, m are relatively prime
-      for alphabet in self.string:
+      for alphabet in self.string.alphabets:
         if(alphabet == 'SPACE'):
           crypt+=' '
           continue
@@ -122,7 +122,6 @@ class Affine:
   def get_inverse(self,a):
     '''
     Inverse of 'a' for decryption
-    
     @param int a
     @return int  
     '''
@@ -137,15 +136,15 @@ class Affine:
     y = a^(-1)(x-b)%m
     a^(-1) is z such that:
       az = 1%m
-      
+
     @param int a
     @param int b
-    @return 'A' object   
+    @return 'A' object
     '''
     m = self.m
     z = self.get_inverse(a)
     crypt = ''
-    for alphabet in self.string:
+    for alphabet in self.string.alphabets:
       if(alphabet == 'SPACE'):
         crypt += ' '
         continue
@@ -156,4 +155,5 @@ class Affine:
 
   def break_affine(self, f_table):
     most_occuring = A(f_table)
-    ordered_string = self.frequencify() #an A object with alphabets arranged in decreasing order of occurance
+    ordered_string = self.string.frequencify() #sorted list of alphabets arranged in decreasing order of occurance
+
