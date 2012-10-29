@@ -166,13 +166,11 @@ class Affine:
     ordered_string = self.string.frequencify(self.language) #sorted list of alphabets arranged in decreasing order of occurance
     x1 = self.language.alphabets.index(most_occuring.alphabets[0])
     x2 = self.language.alphabets.index(most_occuring.alphabets[1])
-    print ordered_string
     for i in range( len(ordered_string) ):
       y1 = self.language.alphabets.index(ordered_string[i])
       y2 = self.language.alphabets.index(ordered_string[i+1])
-
       a = (y1-y2)/(x1-x2)
       b = ((x1*y2) - (x2*y1))/(x1-x2)
-      print "a = %s b = %s \n\n"%(a,b), '-'*60, '\n'
+      print "x1 = %s | x2 = %s | y1 = %s | y2 = %s | a = %s | b = %s \n\n"%(x1,x2,y1,y2,a,b), '-'*60, '\n'
       print self.decrypt(a,b).read()
       print '-'*60, '\n'
