@@ -82,20 +82,6 @@ class Affine:
     self.language = A(language) #alphabet object of the script of language being encoded or decoded (in alphabetic order)
     self.m = len(self.language.alphabets)
 
-  def frequencies(self, f_table, corpus=None):
-    '''
-    Frequencies are either predefined or estimated from a corpus.
-    @param f_table
-    	name of file or raw_string
-    '''
-    if(f_table != None):
-      #f_table is a file or raw_text which contains two most occuring alphabets in a script in order of occurence
-      #ex 'te' for english
-      self.f_table = A(f_table)
-    else:
-      #get into corpus and generate an f_table and save it as a file f_table.json
-      pass #for now !!!TODO!!!
-
   def encrypt(self, a, b):
     '''
     Encrypt string on the basis of give a,b
@@ -140,7 +126,7 @@ class Affine:
 
     @param int a
     @param int b
-    @return 'A' object
+    @return 'A' object or None if inverse doesn't exist
     '''
     m = self.m
     try:
@@ -157,44 +143,63 @@ class Affine:
       crypt += ucd.lookup(self.language.alphabets[y])
     return A(crypt)
 
-  def break_affine(self, f_table):
+  def possible_keys(self):
+    '''
+    Generate all possible keys depending on the value of m for
+    brute force cryptanalysis.
+    '''
+    m = self.m
+    possible_keys=list()
+    for i in range(1,m+1):
+      if(gcd(i,m)==1):
+        possible_keys.append(i)
+    return possible_keys
+
+  def validate(self,observation,corpus="hindi_corpus.txt"):
+    '''
+    Validate brutely cryptanalised A object against a corpus.
+
+    @param observation : A object to analyse
+    @param corpus : text file to analyse against
+    @return bool:
+      True if one word matches.
+      False otherwise
+    '''
+    corpus = file(corpus)
+    flag =  True
+    matches = 0
+    while flag:
+      case = A(corpus.readline()).alphabets
+      if len(case) == 0: continue
+      for test in observation.read().split(' '):
+        test = A(test).alphabets
+        if len(test) == 0: continue
+        if(test == case):
+          print test,case
+          if matches > 4:
+            flag = False
+            break
+          else:
+            matches +=1
+            continue
+    if not flag:
+      return observation
+    return None
+
+  def break_affine(self):
     '''
     Match two most occuring elements in langauage to two most occuring
     elements in the given string. Ask user if the return is apt. If not
     repeat it with next most occuring elements.
 
     @param raw_string or text file
-    @return
+    @return A(object) or None
     '''
-    most_occuring = A(f_table)
-    ordered_string = self.string.frequencify(self.language) #sorted list of alphabets arranged in decreasing order of occurance
-    """
-    print ordered_string
-    x1 = self.language.alphabets.index(most_occuring.alphabets[0])
-    x2 = self.language.alphabets.index(most_occuring.alphabets[1])
-    for i in range( len(ordered_string) ):
-#print self.language.alphabets.index(ordered_string[i])
 
-      try:
-        y1 = self.language.alphabets.index(ordered_string[i])
-        y2 = self.language.alphabets.index(ordered_string[i+1])
-      except IndexError:
-        continue
-      '''
-      a = (y1-y2)/(x1-x2)
-      b = ((x1*y2) - (x2*y1))/(x1-x2)
-      print "x1 = %s | x2 = %s | y1 = %s | y2 = %s | a = %s | b = %s \n\n"%(x1,x2,y1,y2,a,b), '-'*60, '\n'
-      try:
-        print self.decrypt(a,b).read()
-        print '-'*60, '\n'
-      except:
-        print "Inverse doesn't exist"
-      '''
-      nb.crack(x1,x2,y1,y2,self.m)
-    """
-    for i in range(self.m):
+    for i in self.possible_keys():
       for j in range(self.m):
-        try:
-          print self.decrypt(i,j).read()
-        except:
-          pass
+        decrypt = self.decrypt(i,j)
+        if decrypt != None:
+          if self.validate(decrypt) != None:
+            return decrypt
+    return None
