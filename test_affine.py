@@ -6,14 +6,9 @@ import unittest
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
-
-
-
-
 original = Affine("बिक्रम मेरो नाम हो",'devnagri.txt')
 
-encrypt = original.encrypt(1,3)
+encrypt = original.encrypt(5,7)
 print "encrypted :\n", encrypt.read()
 
 print "break attempts :\n"
@@ -29,4 +24,3 @@ if choice3=='yes':
     print Affine(encrypt.read(), 'devnagri.txt').break_affine_manually()
 import os
 os.remove("affine.pyc")
-
