@@ -1,14 +1,32 @@
 #!/usr/bin/python
 #coding=utf-8
 from affine import *
+import unittest
 
-original = Affine("infile.txt",'devnagri.txt')
-print "original :\n", original.string.read()
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-encrypt = original.encrypt(5,5)
+
+
+
+
+
+original = Affine("बिक्रम मेरो नाम हो",'devnagri.txt')
+
+encrypt = original.encrypt(1,3)
 print "encrypted :\n", encrypt.read()
 
 print "break attempts :\n"
-print Affine(encrypt.read(), 'devnagri.txt').break_affine().read()
+choice1=raw_input("Do you want to try frequency analysis based decryption yes/no?")
+if choice1=='yes':
+    print Affine(encrypt.read(),'devnagri.txt').break_affine_frequency("नज").read()
+choice2=raw_input("Do you want to try brute force yes/no? ")
+if choice2=='yes':
+    print Affine(encrypt.read(), 'devnagri.txt').break_affine(2).read()
+
+choice3=raw_input("Do you want to try all keys yes/no?")
+if choice3=='yes':
+    print Affine(encrypt.read(), 'devnagri.txt').break_affine_manually()
 import os
 os.remove("affine.pyc")
+
