@@ -1,0 +1,12 @@
+STEP 1
+Install python idle.
+(from /pysetup directory)
+ 
+STEP 2
+Open file gui.py with IDLE
+ 
+STEP 3
+Press F5
+ 
+STEP 4
+Umm, sorry. No step 4.

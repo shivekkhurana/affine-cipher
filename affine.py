@@ -4,7 +4,6 @@
 
 import unicodedata as ucd
 
-
 class A:
   '''
   Object to hold a list of unicode equivalents of a string in any language
@@ -138,7 +137,6 @@ class Affine:
     m=m-1
     return s[m]
 
-
   def decrypt(self, a, b):
     '''
     Decrypt string on the basis of given a,b
@@ -165,24 +163,19 @@ class Affine:
       crypt += ucd.lookup(self.language.alphabets[y])
     return A(crypt)
 
-  
-
   def crack(self,p,q,r,s,m):##computes key's B and displacys the key set(a,b) for given p,q,r,s,m such than [ap+b=r (mod m)],[aq+b=s (mod m)]
     D=p-q
     D1=r-s
     if(self.gcd(D,m)==1):## equation are subtracted and converted to Da=D1 (mod m)
-        k_a=(self.get_inverse(D,m)*D1)%m
+        k_a=(self.get_inverse(m,D)*D1)%m
     else:
-        
         d=self.gcd(D,m)
         D=D/d
         D1=D1/d
         m=m/d
-        k_a=(self.get_inverse(D,m)*D1)%m
-   
+        k_a=(self.get_inverse(m,D)*D1)%m
     k_b=(r-p*k_a)%m
     return k_a,k_b
-
     
   def possible_keys(self):
     '''
@@ -207,15 +200,13 @@ class Affine:
       False otherwise
     '''
     corpus = file(corpus).read().split('\n')
-    o_list = observation.read().split(' ')
+    o_list = observation.read().split(' ')[0:10] #take only first ten observations if a big input.
     matches=0
 
     for word in corpus:
       word = word.decode('utf-8')
-      
       for word_o in o_list:
-        
-       
+        if len(word_o) == 0: continue
         if word_o == word:
           matches += 1
         if matches > accuracy:
@@ -241,7 +232,7 @@ class Affine:
     decrypt = self.decrypt(a,b)
     return decrypt
       
-  def break_affine(self,accuracy=1):
+  def break_affine(self,accuracy=2):
     '''
     Match two most occuring elements in langauage to two most occuring
     elements in the given string. Ask user if the return is apt. If not
@@ -250,15 +241,16 @@ class Affine:
     @param raw_string or text file
     @return A(object) or None
     '''
-
+    if len(self.string.read().split(' ')) < 3:accuracy = 1
     for i in self.possible_keys():
-      print i
+      print "Breaking at multiplier %s"%i
       for j in range(self.m):
         decrypt = self.decrypt(i,j)
         if decrypt != None:
           if self.validate(decrypt,accuracy) != None:
             print i,j," done"
-            return decrypt
+            return decrypt,i,j
+      print "Fail"
     return None
   
   def break_affine_manually(self):
@@ -266,28 +258,6 @@ class Affine:
     Try all keys.
     '''
     for i in self.possible_keys():
-      for j in range(self.m): 
+      for j in range(self.m):
         print self.decrypt(i,j).read()
         print i,j
-
-  def break_affine_matra(self, accuracy=1, matras="matras.txt"):
-    ''' 
-    Utilise the fact that the end of each hindi sentence is a matra.
-    '''
-    matras = A(matras).alphabets
-    #AA ki matra
-    p = self.language.alphabets.index(A("ा").alphabets[0])
-    ordered_string = self.string.frequencify(self.language)
-    string = self.string.alphabets
-    s = self.language.alphabets.index(self.string.alphabets[-1])
-    for char in string:
-      if char == 'SPACE': continue
-      r = self.language.alphabets.index(char)
-      for matra in matras:
-        q = self.language.alphabets.index(matra)
-
-        a,b = self.crack(p,q,r,s,self.m)
-        print p,q,r,s,a,b,(a,b) == (1,3)
-        decrypt = self.decrypt(a,b)
-        print decrypt.read()
-    return None

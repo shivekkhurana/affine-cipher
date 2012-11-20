@@ -1,8 +1,14 @@
+# -*- coding: utf-8 -*-
+#coding=utf-8
 from affine import *
 
-while(True):
-	a = raw_input("enter text or file name to operate on : ")
-	l = raw_input("enter file_name of script to operate : ")
+def g_encrypt(string,a,b):
+	return Affine(string, "devnagri.txt").encrypt(a,b)
 
-	
-	if raw_input("do you want to continue y/n : ") == 'n' : break
+def g_decrypt(string,a,b):
+	return Affine(string, "devnagri.txt").decrypt(a,b)
+
+def g_break(string,accuracy=2):
+	return Affine(string, "devnagri.txt").break_affine(accuracy)
+def g_break_f(string):
+        return Affine(string, "devnagri.txt").break_affine_frequency("अक")
